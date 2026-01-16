@@ -8,10 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -50,5 +47,18 @@ public class TodoController {
         return ResponseEntity.ok(todo);
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "작업 삭제", description = "ID로 작업 삭제")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "내용 없음"),
+            @ApiResponse(responseCode = "404", description = "작업 없음")
+    })
+    public ResponseEntity<Void> deleteTodoById(@PathVariable Long id) {
+        Todo todo  = todoService.findById(id);
+        if(todo == null)
+            return ResponseEntity.notFound().build();
 
+        todoService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
