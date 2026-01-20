@@ -61,4 +61,43 @@ public class TodoController {
         todoService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping
+    @Operation(summary = "작업 생성", description = "새로운 작업 생성")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description ="생성됨")
+    })
+    public ResponseEntity<Todo> createTodo(@RequestBody Todo todo) {
+        return ResponseEntity.status(201).body(todoService.save(todo));
+    }
+
+    @PutMapping
+    @Operation(summary = "작업 수정", description = "ID로 작업 수정")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "404", description = "작업 없음")
+    })
+    public ResponseEntity<Todo> updateTodo(@PathVariable Long id,
+                                           @RequestBody Todo todo) {
+        Todo existingTodo = todoService.findById(id);
+        if(existingTodo == null)
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(todoService.update(id, todo));
+    }
+
+    @DeleteMapping
+    @Operation(summary = "작업 삭제", description = "ID로 작업 삭제")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "내용 없음"),
+            @ApiResponse(responseCode = "404", description = "작업 없음")
+    })
+    public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
+        Todo todo = todoService.findById(id);
+        if(todo == null)
+            return  ResponseEntity.notFound().build();
+
+        todoService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
