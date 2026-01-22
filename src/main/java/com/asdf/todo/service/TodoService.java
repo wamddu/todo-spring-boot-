@@ -1,39 +1,58 @@
 package com.asdf.todo.service;
 
-import com.asdf.todo.model.Todo;
-import com.asdf.todo.repository.TodoInMemoryRepository;
+import com.asdf.todo.dto.TodoRequestDto;
+import com.asdf.todo.dto.TodoResponseDto;
+import com.asdf.todo.entity.Todo;
+import com.asdf.todo.repository.TodoRepository;
+import com.asdf.todo.util.EntityDtoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.ReadOnlyBufferException;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.swing.text.html.parser.Entity;
 
 @Service
 public class TodoService {
-    private final TodoInMemoryRepository todoRepository;
+    private final TodoRepository todoRepository;
 
-    @Autowired
-    public TodoService(TodoInMemoryRepository todoRepository) {
-        this.todoRepository = todoRepository;
-    }
+   @Autowired
+    public TodoService(TodoRepository todoRepository) {
+       this.todoRepository = todoRepository;
+   }
 
-    public List<Todo> findAll() {
-        return todoRepository.findAll();
-    }
+   @Transactional(readOnly = true)
+   public List<TodoResponseDto> findAll() {
+       return todoRepository.findAll().stream()
+               .map(EntityDtoMapper::toDto)
+               .collect(Collectors.toList());
+   }
 
-    public Todo findById(long id) {
-        return todoRepository.findById(id);
-    }
+    @Transactional(readOnly = true)
+    public TodoResponseDto findById(Long id) {
+       return todoRepository.findById(id).map(EntityDtoMapper::toDto).orElse(null);
+   }
 
-    public Todo save(Todo todo){
-        return todoRepository.save(todo);
-    }
+   @Transactional
+    public TodoResponseDto save(TodoRequestDto todoRequestDto) {
+       Todo todo = EntityDtoMapper.toEntity(todoRequestDto);
+       Todo savedTodo = todoRepository.save(todo);
+       return EntityDtoMapper.toDto(savedTodo);
+   }
 
-    public Todo update(Long id, Todo todo) {
-        todo.setId(id);
-        return todoRepository.save(todo);
-    }
+   @Transactional
+    public TodoResponseDto update(Long id, TodoRequestDto todoRequestDto) {
+       Todo todo = EntityDtoMapper.toEntity(todoRequestDto);
+       todo.setId(id);
+       Todo updatedTodo = todoRepository.save(todo);
+       return EntityDtoMapper.toDto(updatedTodo);
+   }
 
-    public void delete(Long id){
-        todoRepository.deleteById(id);
+   @Transactional
+    public void delete(Long id) {
+       todoRepository.deleteById(id);
     }
 }
